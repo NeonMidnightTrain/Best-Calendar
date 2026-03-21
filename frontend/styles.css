@@ -232,3 +232,40 @@ body {
 .delete-event-btn:hover {
     background: rgba(255,80,80,0.2);
 }
+
+.chatbot{
+    margin-top: 30px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 15px;
+}
+
+.chat-messages{
+    height: 400px;
+    overflow-y: auto;
+    background:rgba(0, 0, 0, 0.15);
+    border-radius: 6px;
+    padding: 10px;
+    margin-top: 10px;
+    margin-bottom: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+#chat-input{
+    flex: 1;
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    outline: none;
+}
+
+#send-chat{
+    padding: 10px 14px;
+    border: none;
+    background: var(--primary-clr);
+    color: white;
+    border-radius: 5px;
+    cursor: pointer;
+}

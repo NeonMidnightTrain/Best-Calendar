@@ -143,7 +143,14 @@ if (saveEventBtn && eventTitleInput && eventTimeInput) {
     const date = `${currentYear}-${m}-${d}`;
 
     const events = getEvents();
-    events.push({ id: Date.now(), title, date, time });
+    events.push({
+      id: Date.now(),
+      title,
+      date,
+      time,
+      startTime: time,
+      endTime: time ? minutesToTime((timeToMinutes(time) || 540) + 60) : '10:00'
+    });
     saveEvents(events);
 
     eventTitleInput.value      = '';
@@ -323,6 +330,65 @@ function formatEventTime(time) {
   return `${normalized}:${minutes} ${suffix}`;
 }
 
+function timeToMinutes(time) {
+  if (!time) return null;
+  const [h, m] = time.split(':').map(Number);
+  return (h * 60) + m;
+}
+
+function minutesToTime(minutes) {
+  const safeMinutes = Math.max(0, Math.min(23 * 60 + 59, minutes));
+  const hours = Math.floor(safeMinutes / 60);
+  const mins = safeMinutes % 60;
+  return `${String(hours).padStart(2, '0')}:${String(mins).padStart(2, '0')}`;
+}
+
+function formatEventRange(startTime, endTime) {
+  if (!startTime && !endTime) return 'All day';
+  if (startTime && endTime) {
+    return `${formatEventTime(startTime)} - ${formatEventTime(endTime)}`;
+  }
+  if (startTime) return formatEventTime(startTime);
+  return formatEventTime(endTime);
+}
+
+function createWeekEventForDate(dateString) {
+  const title = window.prompt('Enter class title:');
+  if (!title || !title.trim()) return;
+
+  const startTimeInput = window.prompt('Enter start time (HH:MM, 24-hour format):', '09:00');
+  if (!startTimeInput) return;
+
+  const endTimeInput = window.prompt('Enter end time (HH:MM, 24-hour format):', '10:00');
+  if (!endTimeInput) return;
+
+  const startMinutes = timeToMinutes(startTimeInput);
+  const endMinutes = timeToMinutes(endTimeInput);
+
+  if (startMinutes === null || endMinutes === null || Number.isNaN(startMinutes) || Number.isNaN(endMinutes)) {
+    window.alert('Please enter valid times in HH:MM format.');
+    return;
+  }
+
+  if (endMinutes <= startMinutes) {
+    window.alert('End time must be later than start time.');
+    return;
+  }
+
+  const events = getEvents();
+  events.push({
+    id: Date.now(),
+    title: title.trim(),
+    date: dateString,
+    time: startTimeInput,
+    startTime: startTimeInput,
+    endTime: endTimeInput
+  });
+  saveEvents(events);
+  renderEvents();
+  renderWeekView();
+}
+
 function renderTimeColumn() {
   if (!timeColumnEl) return;
 
@@ -383,10 +449,17 @@ function renderWeekHeader() {
 function renderWeekColumns() {
   if (!weekBodyEl) return;
 
+  const selectedDate = new Date(currentYear, currentMonth, selectedDay);
+  const weekStart = getStartOfWeek(selectedDate);
+
   let html = '<div class="current-time-line" id="current-time-line"></div>';
 
   for (let day = 0; day < 7; day++) {
-    html += `<div class="week-day-column" data-weekday="${day}">`;
+    const dayDate = new Date(weekStart);
+    dayDate.setDate(weekStart.getDate() + day);
+    const dateString = dayDate.toISOString().split('T')[0];
+
+    html += `<div class="week-day-column" data-weekday="${day}" data-date="${dateString}">`;
 
     for (let hour = 0; hour < 24; hour++) {
       html += `<div class="hour-cell"></div>`;
@@ -396,6 +469,15 @@ function renderWeekColumns() {
   }
 
   weekBodyEl.innerHTML = html;
+
+  weekBodyEl.querySelectorAll('.week-day-column').forEach((column) => {
+    column.addEventListener('click', (e) => {
+      if (e.target.closest('.week-event')) return;
+      const dateString = column.dataset.date;
+      if (!dateString) return;
+      createWeekEventForDate(dateString);
+    });
+  });
 }
 
 function renderWeekEvents() {
@@ -414,25 +496,58 @@ function renderWeekEvents() {
     const dayColumn = weekBodyEl.querySelector(`.week-day-column[data-weekday="${diffDays}"]`);
     if (!dayColumn) return;
 
-    let hour = 9;
-    let minute = 0;
+    const startTime = event.startTime || event.time || '09:00';
+    const endTime = event.endTime || minutesToTime((timeToMinutes(startTime) || 540) + 60);
 
-    if (event.time) {
-      [hour, minute] = event.time.split(':').map(Number);
-    }
+    const startMinutes = timeToMinutes(startTime);
+    const endMinutes = timeToMinutes(endTime);
 
-    const top = (hour * HOUR_HEIGHT) + ((minute / 60) * HOUR_HEIGHT);
-    const height = 56;
+    if (startMinutes === null || endMinutes === null || endMinutes <= startMinutes) return;
+
+    const top = (startMinutes / 60) * HOUR_HEIGHT;
+    const height = Math.max(((endMinutes - startMinutes) / 60) * HOUR_HEIGHT, 36);
 
     const eventEl = document.createElement('div');
     eventEl.className = 'week-event';
     eventEl.style.top = `${top + 4}px`;
-    eventEl.style.height = `${height}px`;
-    eventEl.innerHTML = `
-      <div class="week-event-title">${event.title}</div>
-      <div class="week-event-time">${formatEventTime(event.time)}</div>
-    `;
+    eventEl.style.height = `${height - 8}px`;
 
+    const titleEl = document.createElement('div');
+    titleEl.className = 'week-event-title';
+    titleEl.textContent = event.title;
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.type = 'button';
+    deleteBtn.textContent = '×';
+    deleteBtn.setAttribute('aria-label', 'Delete event');
+    deleteBtn.title = 'Delete event';
+    deleteBtn.style.position = 'absolute';
+    deleteBtn.style.top = '6px';
+    deleteBtn.style.right = '6px';
+    deleteBtn.style.width = '20px';
+    deleteBtn.style.height = '20px';
+    deleteBtn.style.border = 'none';
+    deleteBtn.style.borderRadius = '50%';
+    deleteBtn.style.background = 'rgba(0, 0, 0, 0.12)';
+    deleteBtn.style.cursor = 'pointer';
+    deleteBtn.style.lineHeight = '1';
+    deleteBtn.style.fontSize = '0.95rem';
+    deleteBtn.style.display = 'none';
+    deleteBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      deleteEvent(event.id);
+    });
+
+    eventEl.addEventListener('mouseenter', () => {
+      deleteBtn.style.display = 'block';
+    });
+
+    eventEl.addEventListener('mouseleave', () => {
+      deleteBtn.style.display = 'none';
+    });
+
+    eventEl.appendChild(titleEl);
+    eventEl.appendChild(deleteBtn);
     dayColumn.appendChild(eventEl);
   });
 }

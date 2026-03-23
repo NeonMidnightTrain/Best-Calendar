@@ -195,16 +195,95 @@ function renderEvents() {
 
 // ===== SIMPLE TODO FUNCTION =====
 function addTask() {
-  const input = document.getElementById("taskInput");
+  const input = document.getElementById('taskInput');
+  const taskList = document.getElementById('taskList');
+
+  if (!input || !taskList) return;
+
   const taskText = input.value.trim();
   if (!taskText) return;
 
-  const div = document.createElement("div");
-  div.textContent = taskText;
-  div.style.padding = "5px 0";
+  const taskItem = document.createElement('div');
+  taskItem.style.display = 'flex';
+  taskItem.style.alignItems = 'center';
+  taskItem.style.justifyContent = 'space-between';
+  taskItem.style.gap = '10px';
+  taskItem.style.padding = '8px 0';
 
-  document.getElementById("taskList").appendChild(div);
-  input.value = "";
+  const taskLeft = document.createElement('div');
+  taskLeft.style.display = 'flex';
+  taskLeft.style.alignItems = 'center';
+  taskLeft.style.gap = '10px';
+  taskLeft.style.flex = '1';
+  taskLeft.style.minWidth = '0';
+
+  const checkbox = document.createElement('input');
+  checkbox.type = 'checkbox';
+  checkbox.style.cursor = 'pointer';
+  checkbox.style.flexShrink = '0';
+
+  const taskLabel = document.createElement('span');
+  taskLabel.textContent = taskText;
+  taskLabel.style.flex = '1';
+  taskLabel.style.minWidth = '0';
+
+  const deleteBtn = document.createElement('button');
+  deleteBtn.type = 'button';
+  deleteBtn.textContent = '×';
+  deleteBtn.setAttribute('aria-label', 'Remove task');
+  deleteBtn.title = 'Remove task';
+  deleteBtn.style.width = '24px';
+  deleteBtn.style.height = '24px';
+  deleteBtn.style.borderRadius = '50%';
+  deleteBtn.style.border = '1px solid rgba(0, 0, 0, 0.15)';
+  deleteBtn.style.background = 'transparent';
+  deleteBtn.style.cursor = 'pointer';
+  deleteBtn.style.lineHeight = '1';
+  deleteBtn.style.flexShrink = '0';
+  deleteBtn.style.opacity = '0';
+  deleteBtn.style.pointerEvents = 'none';
+  deleteBtn.style.transition = 'opacity 0.15s ease';
+  deleteBtn.addEventListener('click', () => {
+    taskItem.remove();
+  });
+
+  checkbox.addEventListener('change', () => {
+    if (checkbox.checked) {
+      taskLabel.style.textDecoration = 'line-through';
+      taskLabel.style.opacity = '0.6';
+    } else {
+      taskLabel.style.textDecoration = 'none';
+      taskLabel.style.opacity = '1';
+    }
+  });
+
+  taskItem.addEventListener('mouseenter', () => {
+    deleteBtn.style.opacity = '1';
+    deleteBtn.style.pointerEvents = 'auto';
+  });
+
+  taskItem.addEventListener('mouseleave', () => {
+    deleteBtn.style.opacity = '0';
+    deleteBtn.style.pointerEvents = 'none';
+  });
+
+  taskLeft.appendChild(checkbox);
+  taskLeft.appendChild(taskLabel);
+  taskItem.appendChild(taskLeft);
+  taskItem.appendChild(deleteBtn);
+  taskList.appendChild(taskItem);
+  input.value = '';
+}
+
+const taskInputEl = document.getElementById('taskInput');
+
+if (taskInputEl) {
+  taskInputEl.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addTask();
+    }
+  });
 }
 
 // ===== WEEK VIEW =====

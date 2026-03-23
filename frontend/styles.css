@@ -365,8 +365,8 @@ body {
 
 .chat-input-bar input {
     flex: 1;
-    padding: 12px;
-    border-radius: 20px;
+    padding: 12px 16px;
+    border-radius: 999px;
     border: 1px solid #ccc;
 }
 
@@ -616,4 +616,17 @@ body {
 .week-header-day.active .week-header-day-num {
     background: var(--primary-clr);
     color: white;
+}
+
+#taskInput {
+    border: none;
+    outline: none;
+    background: transparent;
+    width: 100%;
+    padding: 6px 0;
+    font-size: 0.95rem;
+}
+
+#taskInput::placeholder {
+    color: #aaa;
 }

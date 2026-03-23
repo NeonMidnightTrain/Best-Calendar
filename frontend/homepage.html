@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -11,9 +12,9 @@
 
 <div class="container">
 
-  <!-- LEFT SIDE CALENDAR -->
-  <div class="left">
-    <div class="calendar">
+  <!-- LEFT SIDEBAR -->
+  <div class="sidebar-left">
+    <div class="calendar small-calendar">
 
       <div class="month">
         <i class="fa fa-angle-left prev"></i>
@@ -22,13 +23,8 @@
       </div>
 
       <div class="weekdays">
-        <div>Sun</div>
-        <div>Mon</div>
-        <div>Tue</div>
-        <div>Wed</div>
-        <div>Thu</div>
-        <div>Fri</div>
-        <div>Sat</div>
+        <div>S</div><div>M</div><div>T</div>
+        <div>W</div><div>T</div><div>F</div><div>S</div>
       </div>
 
       <div class="days"></div>
@@ -36,38 +32,49 @@
     </div>
   </div>
 
-  <!-- RIGHT SIDE EVENTS -->
-  <div class="right">
-    <h3>Events</h3>
-    <div class="events"></div>
-
-    <button class="add-event-btn">
-      <i class="fas fa-plus"></i> Add Event
-    </button>
-
-    <div class="add-event-form" style="flex-direction:column;">
-      <span id="selected-date-label"></span>
-      <input type="text" id="event-title" placeholder="Event Title">
-      <input type="time" id="event-time">
-      <button id="save-event">Save Event</button>
+  <!-- CENTER (WEEK VIEW) -->
+  <div class="main-view">
+    <div class="week-toolbar">
+      <h2 class="week-title">This Week</h2>
     </div>
 
-    <div class = "chatbot">
-    <h3>Calender Assistant</h3>
-    <div class = "chat-messages" id = "chat-messages"></div>
-    <div class = "chat-input-row">
-      <input
-      type = "text"
-      id = "chat-input"
-      placeholder = "How can I help you?"
-      >
-      <button id = "send-chat">Send</button>
+    <div class="week-view">
+      <div class="time-column" id="time-column"></div>
+
+      <div class="week-schedule">
+        <div class="week-header" id="week-header"></div>
+
+        <div class="week-body-wrapper">
+          <div class="week-body" id="week-body">
+            <div class="current-time-line" id="current-time-line"></div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
+
+  <!-- RIGHT SIDEBAR -->
+  <div class="sidebar-right">
+
+    <div class="todo-box">
+      <h3>To-Do List</h3>
+      <div id="taskList"></div>
+      <input id="taskInput" placeholder="Add task">
+      <button onclick="addTask()">Add</button>
+    </div>
+
+    <div class="chat-box">
+      <h3>Assistant</h3>
+      <div class="chat-messages" id="chat-messages"></div>
+    </div>
+
   </div>
 
-  
+</div>
 
+<div class="chat-input-bar">
+  <input id="chat-input" placeholder="How can I help you?">
+  <button id="send-chat">↑</button>
 </div>
 
 <script src="main.js"></script>
